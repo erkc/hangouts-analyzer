@@ -206,7 +206,7 @@
         status( 'Parsing JSON data...' );
 
         raw = JSON.parse( data );
-        totalConversations = raw['conversation_state'].length;
+        totalConversations = raw['conversations'].length;
         conversations = new FastSet( null,
             function ( a, b ) {
                 return a.id === b.id;
@@ -214,18 +214,18 @@
                 return o.id;
             } );
 
-        for ( index = 0; index < raw['conversation_state'].length; index++ ) {
-            conversationData = raw['conversation_state'][index];
+        for ( index = 0; index < raw['conversations'].length; index++ ) {
+            conversationData = raw['conversations'][index];
 
             conversation = new Conversation(
-                    /* id */ conversationData['conversation_id']['id'],
-                    /* timestamp */ (conversationData['response_header'] ? conversationData['response_header']['current_server_time'] : conversationData['conversation_state']['active_timestamp']) / HANGOUTS_TIMESTAMP_SCALAR
+                    /* id */ conversationData['conversation']['conversation_id']['id'],
+                    /* timestamp */ (conversationData['conversation']['response_header'] ? conversationData['conversation']['response_header']['current_server_time'] : conversationData['conversation']['conversation']['active_timestamp']) / HANGOUTS_TIMESTAMP_SCALAR
                 );
 
             status( 'Processing conversation (' + index + ' / ' + totalConversations + ')...' );
 
-            for ( i = 0; i < conversationData['conversation_state']['conversation']['participant_data'].length; i++ ) {
-                participantData = conversationData['conversation_state']['conversation']['participant_data'][i];
+            for ( i = 0; i < conversationData['conversation']['conversation']['participant_data'].length; i++ ) {
+                participantData = conversationData['conversation']['conversation']['participant_data'][i];
                 conversation.participants.add(
                     new Participant(
                         /* name */ participantData['fallback_name'],
@@ -235,8 +235,8 @@
                 );
             }
 
-            for ( j = 0; j < conversationData['conversation_state']['event'].length; j++ ) {
-                eventData = conversationData['conversation_state']['event'][j];
+            for ( j = 0; j < conversationData['events'].length; j++ ) {
+                eventData = conversationData['events'][j];
 
                 // FIXME: Process other types of hangout events?
                 if ( !eventData['chat_message'] ) {
@@ -261,7 +261,7 @@
                         // Google+ photo attachment
                         attachment = content['attachment'][l];
                         if ( attachment['embed_item']['type'][0].toLowerCase() == 'plus_photo' ) {
-                            attachments.push( attachment['embed_item']['embeds.PlusPhoto.plus_photo']['url'] );
+                            attachments.push( attachment['embed_item']['plus_photo']['url'] );
                         }
                     }
                 }
